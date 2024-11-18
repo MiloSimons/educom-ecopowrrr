@@ -29,6 +29,7 @@ class ClientRepository extends ServiceEntityRepository
         
         $client = new Client();
         $client->setBankAccountInfo($params["bankAccountNumber"]);
+      
         $client->setZipCode($params["zipCode"]);
         $client->setHouseNumber($params["houseNumber"]);
         $client->setStreet($params["street"]); //get from external website, first check whether zipcode already exists and and that info!

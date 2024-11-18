@@ -39,7 +39,7 @@ class ClientService {
         
         if($params["type"] != "A")
         {
-            //$clientAdvisor = $this->fetchClient($params["clientAdvisorId"]);
+            $clientAdvisor = $this->fetchClient($params["clientAdvisorId"]);
         }
         $data = [
           "bankAccountNumber" => $params["bankAccountNumber"],
