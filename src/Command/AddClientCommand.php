@@ -28,27 +28,6 @@ class AddClientCommand extends Command
         $this->cs = $cs;
     }
 
-    protected function configure(): void
-    {
-        /*$this
-            ->addArgument('bankAccountNumber', InputArgument::OPTIONAL, 'Bank Account Number')
-            ->addArgument('zipCode', InputArgument::OPTIONAL, 'Zip code')
-            ->addArgument('houseNumber', InputArgument::OPTIONAL, 'House number')
-            ->addArgument('street', InputArgument::OPTIONAL, 'Street')
-            ->addArgument('city', InputArgument::OPTIONAL, 'City')
-            ->addArgument('municipality', InputArgument::OPTIONAL, 'Municipality')
-            ->addArgument('province', InputArgument::OPTIONAL, 'Province')
-            ->addArgument('longitude', InputArgument::OPTIONAL, 'Longitude')
-            ->addArgument('latitude', InputArgument::OPTIONAL, 'Latitude')
-            ->addArgument('firstName', InputArgument::OPTIONAL, 'First name')
-            ->addArgument('lastName', InputArgument::OPTIONAL, 'Last name')
-            ->addArgument('age', InputArgument::OPTIONAL, 'Age')
-            ->addArgument('gender', InputArgument::OPTIONAL, 'Gender')
-            ->addArgument('type', InputArgument::OPTIONAL, 'Type: C = Client, A = Advisor')
-            ->addArgument('clientAdvisor', InputArgument::OPTIONAL, 'Client Advisor ID (Optional)')
-        ;*/
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -88,7 +67,14 @@ class AddClientCommand extends Command
                     "clientAdvisorId"=>$clientAdvisorId
                    ];
         $io->success($params);
-        $io->success('You have a succesfully created a new client (advisor)!');
+        
+        if($type == "C"){
+            $io->success('You have a succesfully created a new client!');
+        }
+        if($type == "A"){
+            $io->success('You have a succesfully created a new client advisor!');
+        }
+
         $this->cs->addClient($params);
         return Command::SUCCESS;
     }
