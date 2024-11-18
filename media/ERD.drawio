@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="yhwxf9kykjhfS_T5Ydvs" name="Page-1">
-        <mxGraphModel dx="1036" dy="563" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="268" dy="563" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -8,7 +8,7 @@
                     <mxGeometry x="124" y="208" width="205" height="270" as="geometry"/>
                 </mxCell>
                 <mxCell id="4" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;ul&gt;&lt;li&gt;&lt;b&gt;ID&lt;/b&gt;&lt;/li&gt;&lt;li&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;Bank_account-info&lt;/span&gt;&lt;br&gt;&lt;/li&gt;&lt;li&gt;Zip-code&lt;/li&gt;&lt;li&gt;House-Number&lt;/li&gt;&lt;li&gt;Address&lt;/li&gt;&lt;li&gt;Geo-info&lt;/li&gt;&lt;li&gt;Name&lt;/li&gt;&lt;li&gt;Surname&lt;/li&gt;&lt;li&gt;Age&lt;/li&gt;&lt;li&gt;Gender&lt;/li&gt;&lt;li&gt;Type (client (C) or advisor (A))&lt;/li&gt;&lt;ul&gt;&lt;li&gt;If (C): &lt;b&gt;Client_advisor_id&lt;/b&gt;&lt;/li&gt;&lt;/ul&gt;&lt;/ul&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="3" vertex="1">
-                    <mxGeometry x="-35" y="-10" width="240" height="280" as="geometry"/>
+                    <mxGeometry x="-35" y="12" width="240" height="280" as="geometry"/>
                 </mxCell>
                 <mxCell id="6" value="OVERALL-DEVICE" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="444" y="250" width="200" height="152" as="geometry"/>
