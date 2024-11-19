@@ -20,7 +20,7 @@ use App\Service\ClientService;
 )]
 class AddClientCommand extends Command
 {
-    private $as;
+    private $cs;
 
     public function __construct(ClientService $cs)
     {
@@ -64,7 +64,7 @@ class AddClientCommand extends Command
         if($type == "A"){
             $io->success('You have a succesfully created a new client advisor!');
         }
-        
+
         return Command::SUCCESS;
     }
 }

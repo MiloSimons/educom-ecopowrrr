@@ -15,4 +15,17 @@ class DeviceRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Device::class);
     }
+
+    public function saveDevice($params) {
+        
+        $device = new device();
+        $device->setOverallDevice($params["overallDevice"]);
+        $device->setSerialNumber($params["serialNumber"]);
+        $device->setType($params["type"]);
+
+        $this->getEntityManager()->persist($device);
+        $this->getEntityManager()->flush();
+
+        return($device);
+    }
 }

@@ -28,4 +28,8 @@ class OverallDeviceRepository extends ServiceEntityRepository
 
         return($overallDevice);
     }
+
+    public function fetchOverallDevice($id) {
+        return($this->find($id));
+    }
 }
