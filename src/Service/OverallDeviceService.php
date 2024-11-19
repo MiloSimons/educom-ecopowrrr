@@ -24,11 +24,6 @@ class OverallDeviceService {
 
     }
 
-    /*private function fetchOverallDevice($id = null) {
-        if(is_null($id)) return(null);
-        return($this->overallDeviceRepository->fetchOverallDevice($id));
-    }*/
-
     private function fetchStatus($status) {
         return($this->statusRepository->fetchStatus($status));
     }

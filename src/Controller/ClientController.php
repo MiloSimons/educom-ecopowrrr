@@ -20,15 +20,9 @@ class ClientController extends AbstractController
 
     #[Route('/addClient', name: 'addClient')]
     public function addClient(Request $request) {
-        $params = json_decode($request->getContent(),true);
-        //
-        //$data = $params;
-        //$clientData = $params;
-        
+        $params = json_decode($request->getContent(),true);        
         $this->cs->addClient($params);
-        $response = new Response(json_encode($params));
-        
-        return ($response);
-        
+        $response = new Response(json_encode($params));        
+        return ($response);        
     }
 }

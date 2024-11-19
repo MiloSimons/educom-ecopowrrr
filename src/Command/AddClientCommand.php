@@ -34,12 +34,6 @@ class AddClientCommand extends Command
         $bankAccountNumber = $io->ask('Please enter your bank account number:');
         $zipCode = $io->ask('Please enter your zip code:');
         $houseNumber = $io->ask('Please enter your housenumber:');
-        $street = $io->ask('Please enter your street:');
-        $city = $io->ask('Please enter your city:');
-        $municipality = $io->ask('Please enter your municipality:');
-        $province = $io->ask('Please your province:');
-        $longitude = $io->ask('Please your longitude:');
-        $latitude = $io->ask('Please enter your latitude');
         $firstName = $io->ask('Please enter your first name:');
         $lastName = $io->ask('Please enter your last name');
         $age = $io->ask('Please enter your age:');
@@ -53,12 +47,6 @@ class AddClientCommand extends Command
         $params = [ "bankAccountNumber"=>$bankAccountNumber,
                     "zipCode"=>$zipCode,
                     "houseNumber"=>$houseNumber,
-                    "street"=>$street,
-                    "city"=>$city,
-                    "municipality"=>$municipality,
-                    "province"=>$province,
-                    "longitude"=>$longitude,
-                    "latitude"=>$latitude,
                     "firstName"=>$firstName,
                     "lastName"=>$lastName,
                     "age"=>$age,
@@ -67,6 +55,8 @@ class AddClientCommand extends Command
                     "clientAdvisorId"=>$clientAdvisorId
                    ];
         $io->success($params);
+
+        $this->cs->addClient($params);
         
         if($type == "C"){
             $io->success('You have a succesfully created a new client!');
@@ -74,8 +64,7 @@ class AddClientCommand extends Command
         if($type == "A"){
             $io->success('You have a succesfully created a new client advisor!');
         }
-
-        $this->cs->addClient($params);
+        
         return Command::SUCCESS;
     }
 }
