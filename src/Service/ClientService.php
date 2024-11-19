@@ -91,6 +91,8 @@ class ClientService {
     public function addClient($params) {
         $client = $this->saveClient($params);
         //only add overall device for clients, not for client advisors!
-        $this->ods->saveOverallDevice($client);
+        if($params["type"]=="C"){
+            $this->ods->saveOverallDevice($client);
+        }      
     }
 }
