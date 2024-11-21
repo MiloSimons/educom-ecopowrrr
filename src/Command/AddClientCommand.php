@@ -44,7 +44,8 @@ class AddClientCommand extends Command
             $clientAdvisorId = $io->ask('Please enter the ID of your client advisor:');
         }
 
-        $params = [ "bankAccountNumber"=>$bankAccountNumber,
+        $params = [
+                    "bankAccountNumber"=>$bankAccountNumber,
                     "zipCode"=>$zipCode,
                     "houseNumber"=>$houseNumber,
                     "firstName"=>$firstName,

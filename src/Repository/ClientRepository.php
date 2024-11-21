@@ -23,8 +23,7 @@ class ClientRepository extends ServiceEntityRepository
     public function saveClient($params) {
         
         $client = new Client();
-        $client->setBankAccountInfo($params["bankAccountNumber"]);
-      
+        $client->setBankAccountInfo($params["bankAccountNumber"]);       
         $client->setZipCode($params["zipCode"]);
         $client->setHouseNumber($params["houseNumber"]);
         $client->setStreet($params["street"]);

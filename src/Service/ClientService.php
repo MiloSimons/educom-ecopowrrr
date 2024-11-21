@@ -40,13 +40,14 @@ class ClientService {
 
         curl_close($curl);
         
-        $addressInfo = ["street" => $result["street"],
+        $addressInfo = [
+                        "street" => $result["street"],
                         "city" => $result["city"],
                         "municipality" => $result["municipality"],
                         "province" => $result["province"],
                         "longitude" => $result["geo"]["lon"],
                         "latitude" => $result["geo"]["lat"]
-                        ];
+                    ];
 
         return ($addressInfo);
     }
@@ -65,32 +66,32 @@ class ClientService {
         {
             $clientAdvisor = $this->fetchClient($params["clientAdvisorId"]);
         }
-        $data = [
-          "bankAccountNumber" => $params["bankAccountNumber"],
-          "zipCode" => $params["zipCode"],
-          "houseNumber" => $params["houseNumber"],
+            $data = [
+                     "bankAccountNumber" => $params["bankAccountNumber"],
+                     "zipCode" => $params["zipCode"],
+                     "houseNumber" => $params["houseNumber"],
 
-          "street" => $addressInfo["street"],
-          "city" => $addressInfo["city"],
-          "municipality" => $addressInfo["municipality"],
-          "province" => $addressInfo["province"],
-          "longitude" => $addressInfo["longitude"],
-          "latitude" => $addressInfo["latitude"],
+                     "street" => $addressInfo["street"],
+                     "city" => $addressInfo["city"],
+                     "municipality" => $addressInfo["municipality"],
+                     "province" => $addressInfo["province"],
+                     "longitude" => $addressInfo["longitude"],
+                     "latitude" => $addressInfo["latitude"],
 
-          "firstName" => $params["firstName"],
-          "lastName" => $params["lastName"],
-          "age" => $params["age"],
-          "gender" => $params["gender"],
-          "type" => $params["type"],
-          "clientAdvisor" => $clientAdvisor        
-        ];
+                     "firstName" => $params["firstName"],
+                     "lastName" => $params["lastName"],
+                     "age" => $params["age"],
+                     "gender" => $params["gender"],
+                     "type" => $params["type"],
+                     "clientAdvisor" => $clientAdvisor
+                    ];
         $result = $this->clientRepository->saveClient($data);
         return($result);
     }
-
+    
     public function addClient($params) {
         $client = $this->saveClient($params);
-        //only add overall device for clients, not for client advisors!
+        //only add overall-device for clients, not for client advisors!
         if($params["type"]=="C"){
             $this->ods->saveOverallDevice($client);
         }      

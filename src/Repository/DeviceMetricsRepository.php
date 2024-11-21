@@ -15,4 +15,21 @@ class DeviceMetricsRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, DeviceMetrics::class);
     }
+
+    public function saveDeviceMetrics($params) {
+        
+        $deviceMetrics = new DeviceMetrics();
+        $deviceMetrics->setDevice($params["device"]);
+        $deviceMetrics->setPrice($params["price"]);
+        $deviceMetrics->setStatus($params["status"]);
+
+        $deviceMetrics->setTotalYield($params["totalYield"]);
+        $deviceMetrics->setMonthlyYield($params["monthlyYield"]);
+        $deviceMetrics->setDate($params["date"]);
+
+        $this->getEntityManager()->persist($deviceMetrics);
+        $this->getEntityManager()->flush();
+
+        return($deviceMetrics);
+    }
 }
