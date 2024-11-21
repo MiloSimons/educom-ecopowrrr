@@ -16,7 +16,7 @@ use App\Service\DeviceService;
 
 #[AsCommand(
     name: 'addDevice',
-    description: 'Add a new devicer',
+    description: 'Add a new device',
 )]
 class AddDeviceCommand extends Command
 {
@@ -35,7 +35,8 @@ class AddDeviceCommand extends Command
         $type = $io->ask('Please enter the type of device you wish to add:');
         $overallDeviceId = $io->ask('Please enter the ID of your overall device:');
 
-        $params = [ "serialNumber"=>$serialNumber,
+        $params = [
+                    "serialNumber"=>$serialNumber,
                     "type"=>$type,
                     "overallDeviceId"=>$overallDeviceId
                   ];
