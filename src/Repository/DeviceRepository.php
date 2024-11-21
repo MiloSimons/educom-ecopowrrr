@@ -18,7 +18,7 @@ class DeviceRepository extends ServiceEntityRepository
 
     public function saveDevice($params) {
         
-        $device = new device();
+        $device = new Device();
         $device->setOverallDevice($params["overallDevice"]);
         $device->setSerialNumber($params["serialNumber"]);
         $device->setType($params["type"]);
@@ -27,5 +27,9 @@ class DeviceRepository extends ServiceEntityRepository
         $this->getEntityManager()->flush();
 
         return($device);
+    }
+
+    public function fetchDevice($id) {
+        return($this->find($id));
     }
 }

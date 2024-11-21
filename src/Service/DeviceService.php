@@ -27,11 +27,10 @@ class DeviceService {
     }
 
     private function saveDevice($params) {
-        $overAllDevice = $this->fetchOverallDevice($params["overallDeviceId"]);        
         $data = [
           "serialNumber" => $params["serialNumber"],
           "type" => $params["type"],
-          "overallDevice" => $overAllDevice        
+          "overallDevice" => $this->fetchOverallDevice($params["overallDeviceId"])        
         ];
         $result = $this->deviceRepository->saveDevice($data);
         return($result);
