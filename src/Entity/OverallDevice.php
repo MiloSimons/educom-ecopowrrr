@@ -23,21 +23,22 @@ class OverallDevice
     #[ORM\JoinColumn(nullable: false)]
     private ?Status $status = null;
 
-    #[ORM\Column]
-    private ?float $totalKwHUsed = null;
-
-    #[ORM\Column]
-    private ?float $monthlyKwHUsed = null;
-
     /**
      * @var Collection<int, Device>
      */
     #[ORM\OneToMany(targetEntity: Device::class, mappedBy: 'overallDevice')]
     private Collection $devices;
 
+    /**
+     * @var Collection<int, MonthlyUsed>
+     */
+    #[ORM\OneToMany(targetEntity: MonthlyUsed::class, mappedBy: 'overallDevice')]
+    private Collection $monthlyUseds;    
+
     public function __construct()
     {
         $this->devices = new ArrayCollection();
+        $this->monthlyUseds = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -69,30 +70,6 @@ class OverallDevice
         return $this;
     }
 
-    public function getTotalKwHUsed(): ?float
-    {
-        return $this->totalKwHUsed;
-    }
-
-    public function setTotalKwHUsed(float $totalKwHUsed): static
-    {
-        $this->totalKwHUsed = $totalKwHUsed;
-
-        return $this;
-    }
-
-    public function getMonthlyKwHUsed(): ?float
-    {
-        return $this->monthlyKwHUsed;
-    }
-
-    public function setMonthlyKwHUsed(float $monthlyKwHUsed): static
-    {
-        $this->monthlyKwHUsed = $monthlyKwHUsed;
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, Device>
      */
@@ -117,6 +94,36 @@ class OverallDevice
             // set the owning side to null (unless already changed)
             if ($device->getOverallDevice() === $this) {
                 $device->setOverallDevice(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MonthlyUsed>
+     */
+    public function getMonthlyUseds(): Collection
+    {
+        return $this->monthlyUseds;
+    }
+
+    public function addMonthlyUsed(MonthlyUsed $monthlyUsed): static
+    {
+        if (!$this->monthlyUseds->contains($monthlyUsed)) {
+            $this->monthlyUseds->add($monthlyUsed);
+            $monthlyUsed->setOverallDevice($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMonthlyUsed(MonthlyUsed $monthlyUsed): static
+    {
+        if ($this->monthlyUseds->removeElement($monthlyUsed)) {
+            // set the owning side to null (unless already changed)
+            if ($monthlyUsed->getOverallDevice() === $this) {
+                $monthlyUsed->setOverallDevice(null);
             }
         }
 

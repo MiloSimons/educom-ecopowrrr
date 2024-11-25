@@ -20,8 +20,6 @@ class OverallDeviceRepository extends ServiceEntityRepository
         $overallDevice = new OverallDevice();
         $overallDevice->setClient($params["client"]);
         $overallDevice->setStatus($params["status"]);
-        $overallDevice->setTotalKwHUsed(0);
-        $overallDevice->setMonthlyKwHUsed(0);
 
         $this->getEntityManager()->persist($overallDevice);
         $this->getEntityManager()->flush();

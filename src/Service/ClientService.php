@@ -57,8 +57,11 @@ class ClientService {
         return($this->clientRepository->fetchClient($id));
     }
 
+    public function fetchAllClients() {
+        return($this->clientRepository->fetchAllClients());
+    }
+
     private function saveClient($params) {
-        
         $clientAdvisor = null;
         $addressInfo = $this->fetchAddressInfo($params["zipCode"], $params["houseNumber"]);
         
@@ -138,7 +141,7 @@ class ClientService {
         $devicesMetrics = $device->getDeviceMetrics();
         foreach($devicesMetrics as $deviceMetrics) {
             $date = $deviceMetrics->getDate();
-            if($date->format('Y') == $year && $date->format('m') == $month){
+            if($date->format('Y') == $year && $date->format('m') == $month) {
                 $deviceMetricsId = $deviceMetrics->getId();
                 $allDevicesMetrics = [
                                         "deviceStatus" => $deviceStatus = $deviceMetrics->getStatus()->getStatus(),
@@ -152,5 +155,38 @@ class ClientService {
 
     private function randomHash($len=20) {
         return substr(hash('sha256', openssl_random_pseudo_bytes(20)), -$len);
+    }
+
+    public function getSpreadsheet1Info() {
+        $allClients = $this->fetchAllClients();
+        $spreadsheet1Info = [];
+        foreach($allClients as $client) {
+            if($client->getType() == "C") {
+                $overallDevice =  $this->ods->fetchOverallDeviceByClient($client);
+                $devices = $overallDevice->getDevices();
+                foreach($devices as $device) {
+                    $devicesMetrics = $device->getDeviceMetrics();
+                    foreach($deviceMetrics as $metrics) {
+                        $totalYield = $metrics->getTotalYield();
+                        $monthlyYield = $metrics->getMonthlyYield();
+                        $price = $metrics->getPrice()->getBuyInPrice();
+                    }
+                }
+                //get yield
+                //get surplus
+                //get price
+
+                $spreadsheet1Info["client".$client->getId()] = [
+                    "firstName" => $client->getFirstName(),
+                    "lastName" => $client->getLastName(),
+                    "age" => $client->getAge(),
+                    "gender" => $client->getGender(),
+                    //"totalTurnover" => null, //Price*total_surplus(yield - usage)
+                    //"surplusPerMonth" => null //yield - usage
+                ];
+            }            
+        }
+        //$spreadsheet1Info = null;
+        return($spreadsheet1Info);
     }
 }

@@ -17,6 +17,7 @@ use App\Service\ClientService;
 use App\Service\DeviceService;
 use App\Service\PriceService;
 use App\Service\DeviceMetricsService;
+use App\Service\MonthlyUsedService;
 
 #[AsCommand(
     name: 'app:import-spreadsheet',
@@ -28,14 +29,16 @@ class ImportSpreadsheetCommand extends Command
     private $ds;
     private $ps;
     private $dms;
+    private $mus;
 
-    public function __construct(ClientService $cs, DeviceService $ds, PriceService $ps, DeviceMetricsService $dms)
+    public function __construct(ClientService $cs, DeviceService $ds, PriceService $ps, DeviceMetricsService $dms, MonthlyUsedService $mus)
     {
         parent::__construct();
         $this->cs = $cs;
         $this->ds = $ds;
         $this->ps = $ps;
         $this->dms = $dms;
+        $this->mus = $mus;
     }
 
     protected function configure(): void
@@ -56,16 +59,19 @@ class ImportSpreadsheetCommand extends Command
         $deviceSheet        = $spreadsheet->getSheetByName("Device");
         $priceSheet         = $spreadsheet->getSheetByName("Price");
         $deviceMetricsSheet = $spreadsheet->getSheetByName("DeviceMetrics");
+        $monthlyUsedSheet   = $spreadsheet->getSheetByName("MonthlyUsed");
 
         $clientData        = $clientSheet->toArray("", true, true);
         $deviceData        = $deviceSheet->toArray("", true, true);
         $priceData         = $priceSheet->toArray("", true, true);
-        $deviceMetricsData = $deviceMetricsSheet->toArray("", true, true);        
+        $deviceMetricsData = $deviceMetricsSheet->toArray("", true, true);
+        $monthlyUsedData   = $monthlyUsedSheet->toArray("", true, true);        
         
         $this->addClientData($clientData);
         $this->addDeviceData($deviceData);
         $this->addPriceData($priceData);
-        $this->addDeviceMetricsData($deviceMetricsData);      
+        $this->addDeviceMetricsData($deviceMetricsData);
+        $this->addMonthlyUsedData($monthlyUsedData);       
 
         return Command::SUCCESS;
     }
@@ -127,7 +133,7 @@ class ImportSpreadsheetCommand extends Command
         }
     }
 
-    public function addDeviceMetricsData($deviceMetricsData) {
+    private function addDeviceMetricsData($deviceMetricsData) {
         for($i = 1; $i<count($deviceMetricsData); $i++) {
             $deviceId     = $deviceMetricsData[$i][1];
             $priceId      = $deviceMetricsData[$i][2];
@@ -143,6 +149,21 @@ class ImportSpreadsheetCommand extends Command
                        "date" => date_create_from_format("Y-m-d", $date)
                       ];
             $this->dms->addDeviceMetrics($params);            
+        }
+    }
+
+    private function addMonthlyUsedData($monthlyUsedData) {
+        for($i = 1; $i<count($monthlyUsedData); $i++) {
+            $overallDeviceId = $monthlyUsedData[$i][1];
+            $date            = $monthlyUsedData[$i][2];
+            $monthlyKwHUsed  = $monthlyUsedData[$i][3];
+            
+            $params = [
+                       "overallDeviceId" => (int)$overallDeviceId,
+                       "monthlyKwHUsed" => (float)$monthlyKwHUsed,
+                       "date" => date_create_from_format("Y-m-d", $date)
+                      ];
+            $this->mus->addMonthlyUsed($params);            
         }
     }
 }

@@ -20,6 +20,10 @@ class ClientRepository extends ServiceEntityRepository
         return($this->find($id));
     }
 
+    public function fetchAllClients() {
+        return($this->findAll());
+    }
+
     public function findByZipCode($zipCode, $houseNumber) {
         $allZipCodes = $this->findBy(['zipCode'  => $zipCode]);
         foreach($allZipCodes as $zipCode) {

@@ -9,8 +9,6 @@ use App\Entity\Status;
 use App\Repository\OverallDeviceRepository;
 use App\Repository\StatusRepository;
 
-//use App\Service\ClientService;
-
 class OverallDeviceService {
 
     /** @var OverallDeviceRepository $overallDeviceRepository */    
@@ -29,7 +27,6 @@ class OverallDeviceService {
 
     public function fetchOverallDeviceByClient($clientId) {
         return($this->overallDeviceRepository->fetchOverallDeviceByClient($clientId));
-        //make array of object by using getters
     }
 
     public function saveOverallDevice($client) {
