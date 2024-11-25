@@ -105,19 +105,15 @@ class ClientService {
     public function getMessage($zipCode, $houseNumber, $month, $year) {
         $client = $this->getClientByZipCode($zipCode, $houseNumber);
         $overallDevice = $this->ods->fetchOverallDeviceByClient($client);
-        $deviceInfo = $this->getAllDeviceInfo($overallDevice, $month, $year);     
-       
-        //dd($deviceInfo);
         $data = [
                     "messageId" => $this->randomHash(),
                     "overallDeviceId" => $overallDevice->getId(),
                     "deviceStatus" => $overallDevice->getStatus()->getStatus(),
                     "date" => $month . ' ' . $year,
-                    "devices" => $deviceInfo
-                        //total surplus
-                        //month surplus
-                ];
-        dd($data);        
+                    "totalUsage" => $overallDevice->getTotalKwHUsed(),
+                    "monthlyUsage" => $overallDevice->getMonthlyKwHUsed(), 
+                    "devices" => $this->getAllDeviceInfo($overallDevice, $month, $year)
+                ];       
         return($data);
     }
 
@@ -132,8 +128,7 @@ class ClientService {
                                                     "type" => $device->getType(),
                                                     "deviceStatus" => $deviceMetrics["deviceStatus"],
                                                     "deviceTotalYield" => $deviceMetrics["deviceTotalYield"],
-                                                    "deviceMonthlyYield" => $deviceMetrics["deviceMonthlyYield"],
-                                                    "deviceDate" => $deviceMetrics["deviceDate"]
+                                                    "deviceMonthlyYield" => $deviceMetrics["deviceMonthlyYield"]
                                                 ];
         }
         return($devicesInfo);
@@ -148,8 +143,7 @@ class ClientService {
                 $allDevicesMetrics = [
                                         "deviceStatus" => $deviceStatus = $deviceMetrics->getStatus()->getStatus(),
                                         "deviceTotalYield" => $deviceMetrics->getTotalYield(),
-                                        "deviceMonthlyYield" => $deviceMetrics->getMonthlyYield(),
-                                        "deviceDate" => $date
+                                        "deviceMonthlyYield" => $deviceMetrics->getMonthlyYield()
                                     ];
             }
         }
