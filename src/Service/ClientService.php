@@ -96,4 +96,67 @@ class ClientService {
             $this->ods->saveOverallDevice($client);
         }      
     }
+
+    private function getClientByZipCode($zipCode, $houseNumber) {
+        $client = $this->clientRepository->findByZipCode($zipCode, $houseNumber);
+        return($client);
+    }
+
+    public function getMessage($zipCode, $houseNumber, $month, $year) {
+        $client = $this->getClientByZipCode($zipCode, $houseNumber);
+        $overallDevice = $this->ods->fetchOverallDeviceByClient($client);
+        $deviceInfo = $this->getAllDeviceInfo($overallDevice, $month, $year);     
+       
+        //dd($deviceInfo);
+        $data = [
+                    "messageId" => $this->randomHash(),
+                    "overallDeviceId" => $overallDevice->getId(),
+                    "deviceStatus" => $overallDevice->getStatus()->getStatus(),
+                    "date" => $month . ' ' . $year,
+                    "devices" => $deviceInfo
+                        //total surplus
+                        //month surplus
+                ];
+        dd($data);        
+        return($data);
+    }
+
+    private function getAllDeviceInfo($overallDevice, $month, $year) {
+        $devices = $overallDevice->getDevices();
+        $devicesInfo = [];
+        foreach($devices as $device) {
+            $deviceId = $device->getId();
+            $deviceMetrics = $this->getDeviceMetricsInfo($device, $month, $year);
+            $devicesInfo["deviceId".$deviceId] = [
+                                                    "serialNumber" => $device->getSerialNumber(),
+                                                    "type" => $device->getType(),
+                                                    "deviceStatus" => $deviceMetrics["deviceStatus"],
+                                                    "deviceTotalYield" => $deviceMetrics["deviceTotalYield"],
+                                                    "deviceMonthlyYield" => $deviceMetrics["deviceMonthlyYield"],
+                                                    "deviceDate" => $deviceMetrics["deviceDate"]
+                                                ];
+        }
+        return($devicesInfo);
+    }
+
+    private function getDeviceMetricsInfo($device, $month, $year) {
+        $devicesMetrics = $device->getDeviceMetrics();
+        foreach($devicesMetrics as $deviceMetrics) {
+            $date = $deviceMetrics->getDate();
+            if($date->format('Y') == $year && $date->format('m') == $month){
+                $deviceMetricsId = $deviceMetrics->getId();
+                $allDevicesMetrics = [
+                                        "deviceStatus" => $deviceStatus = $deviceMetrics->getStatus()->getStatus(),
+                                        "deviceTotalYield" => $deviceMetrics->getTotalYield(),
+                                        "deviceMonthlyYield" => $deviceMetrics->getMonthlyYield(),
+                                        "deviceDate" => $date
+                                    ];
+            }
+        }
+        return($allDevicesMetrics);
+    }
+
+    private function randomHash($len=20) {
+        return substr(hash('sha256', openssl_random_pseudo_bytes(20)), -$len);
+    }
 }

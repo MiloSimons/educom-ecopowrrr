@@ -21,11 +21,15 @@ class OverallDeviceService {
     public function __construct(EntityManagerInterface $em) {
         $this->overallDeviceRepository = $em->getRepository(OverallDevice::class);
         $this->statusRepository = $em->getRepository(Status::class);
-
     }
 
     private function fetchStatus($status) {
         return($this->statusRepository->fetchStatus($status));
+    }
+
+    public function fetchOverallDeviceByClient($clientId) {
+        return($this->overallDeviceRepository->fetchOverallDeviceByClient($clientId));
+        //make array of object by using getters
     }
 
     public function saveOverallDevice($client) {

@@ -20,6 +20,16 @@ class ClientRepository extends ServiceEntityRepository
         return($this->find($id));
     }
 
+    public function findByZipCode($zipCode, $houseNumber) {
+        $allZipCodes = $this->findBy(['zipCode'  => $zipCode]);
+        foreach($allZipCodes as $zipCode) {
+            if($zipCode->getHouseNumber() == $houseNumber){
+                $client = $zipCode;
+            }
+        }
+        return($client);
+    }
+
     public function saveClient($params) {
         
         $client = new Client();

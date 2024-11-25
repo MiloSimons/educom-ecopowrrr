@@ -32,4 +32,8 @@ class OverallDeviceRepository extends ServiceEntityRepository
     public function fetchOverallDevice($id) {
         return($this->find($id));
     }
+
+    public function fetchOverallDeviceByClient($client) {
+        return($this->findOneBy(['client' => $client]));
+    }
 }
