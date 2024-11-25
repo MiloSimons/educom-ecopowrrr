@@ -108,13 +108,13 @@ class ClientService {
     public function getMessage($zipCode, $houseNumber, $month, $year) {
         $client = $this->getClientByZipCode($zipCode, $houseNumber);
         $overallDevice = $this->ods->fetchOverallDeviceByClient($client);
+        
         $data = [
                     "messageId" => $this->randomHash(),
                     "overallDeviceId" => $overallDevice->getId(),
                     "deviceStatus" => $overallDevice->getStatus()->getStatus(),
                     "date" => $month . ' ' . $year,
-                    "totalUsage" => $overallDevice->getTotalKwHUsed(),
-                    "monthlyUsage" => $overallDevice->getMonthlyKwHUsed(), 
+                    "monthlyUsage" => $this->getMonthlyKwHUsed($overallDevice, $month, $year),
                     "devices" => $this->getAllDeviceInfo($overallDevice, $month, $year)
                 ];       
         return($data);
@@ -142,7 +142,6 @@ class ClientService {
         foreach($devicesMetrics as $deviceMetrics) {
             $date = $deviceMetrics->getDate();
             if($date->format('Y') == $year && $date->format('m') == $month) {
-                $deviceMetricsId = $deviceMetrics->getId();
                 $allDevicesMetrics = [
                                         "deviceStatus" => $deviceStatus = $deviceMetrics->getStatus()->getStatus(),
                                         "deviceTotalYield" => $deviceMetrics->getTotalYield(),
@@ -151,6 +150,17 @@ class ClientService {
             }
         }
         return($allDevicesMetrics);
+    }
+
+    private function getMonthlyKwHUsed($overallDevice, $month, $year) {
+        $monthlyUseds = $overallDevice->getMonthlyUseds();
+        foreach($monthlyUseds as $monthlyUsed) {
+            $date = $monthlyUsed->getDate();
+            if($date->format('Y') == $year && $date->format('m') == $month) {
+                $monthlyKwHUsed = $monthlyUsed->getMonthlyKwHUsed();
+            }
+        }
+        return($monthlyKwHUsed);
     }
 
     private function randomHash($len=20) {
