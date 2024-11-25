@@ -39,6 +39,6 @@ class MonthlyUsedService {
     }
 
     public function addMonthlyUsed($params) {
-        $device = $this->saveMonthlyUsed($params);    
+        $monthlyUsed = $this->saveMonthlyUsed($params);    
     }
 }    
