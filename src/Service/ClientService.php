@@ -166,7 +166,7 @@ class ClientService {
         return substr(hash('sha256', openssl_random_pseudo_bytes(20)), -$len);
     }
 
-    public function getSpreadsheet1Info() {
+    public function getSpreadsheet1Info($year) {
         $allClients = $this->fetchAllClients();
         $spreadsheet1Info = [];
         foreach($allClients as $client) {
@@ -176,10 +176,12 @@ class ClientService {
                 $devices = $overallDevice->getDevices();
                 $monthlyYieldTotal = $this->getMonthlyYieldAndPrice($devices)["totalYield"];
                 $priceMonth = $this->getMonthlyYieldAndPrice($devices)["prices"];
+                
                 $monthlyKwHUseds = $overallDevice->getMonthlyUseds();
-
-                $totalOverturn = $this->calcSurplusAndOverturn($monthlyKwHUseds, $monthlyYieldTotal, $priceMonth)["totalOverturn"];
-                $surplusses = $this->calcSurplusAndOverturn($monthlyKwHUseds, $monthlyYieldTotal, $priceMonth)["surplusses"];              
+                $monthlyKwHUsedsYear = $this->filterOnYear($monthlyKwHUseds, $year);
+                
+                $totalOverturn = $this->calcSurplusAndOverturn($monthlyKwHUsedsYear, $monthlyYieldTotal, $priceMonth)["totalOverturn"];
+                $surplusses = $this->calcSurplusAndOverturn($monthlyKwHUsedsYear, $monthlyYieldTotal, $priceMonth)["surplusses"];              
 
                 $spreadsheet1Info["client".$client->getId()] = [
                     "firstName" => $client->getFirstName(),
@@ -236,5 +238,16 @@ class ClientService {
             }
         }
         return(["totalOverturn"=>$totalOverturn, "surplusses"=>$surplusses]);
+    }
+
+    private function filterOnYear($monthlyKwHUseds, $year) {
+        $monthlyKwHUsedsYear = [];
+        foreach($monthlyKwHUseds as $kwhUsed) {
+            $kwhYear = $kwhUsed->getDate()->format('Y');
+            if($kwhYear ==$year) {
+                $monthlyKwHUsedsYear[] = $kwhUsed;
+            }
+        }
+        return($monthlyKwHUsedsYear);
     }
 }
