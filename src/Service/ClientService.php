@@ -107,8 +107,7 @@ class ClientService {
 
     public function getMessage($zipCode, $houseNumber, $month, $year) {
         $client = $this->getClientByZipCode($zipCode, $houseNumber);
-        $overallDevice = $this->ods->fetchOverallDeviceByClient($client);
-        
+        $overallDevice = $this->ods->fetchOverallDeviceByClient($client);        
         $data = [
                     "messageId" => $this->randomHash(),
                     "overallDeviceId" => $overallDevice->getId(),
@@ -174,29 +173,84 @@ class ClientService {
             if($client->getType() == "C") {
                 $overallDevice =  $this->ods->fetchOverallDeviceByClient($client);
                 $devices = $overallDevice->getDevices();
+                $monthlyKwHUseds = $overallDevice->getMonthlyUseds();
+                $totalOverturn = 0;
+                $surplusses = [];
+                $monthlyYieldTotal = [];
+                $priceMonth = [];
+
                 foreach($devices as $device) {
-                    $devicesMetrics = $device->getDeviceMetrics();
+                    $deviceMetrics = $device->getDeviceMetrics();
                     foreach($deviceMetrics as $metrics) {
-                        $totalYield = $metrics->getTotalYield();
-                        $monthlyYield = $metrics->getMonthlyYield();
+                        $monthlyYield = $metrics->getMonthlyYield();                      
+                        $month = $metrics->getPrice()->getStartDate()->format('m');
+                        $year = $metrics->getPrice()->getStartDate()->format('Y');
+                        if(!empty($monthlyYieldTotal[$month.$year])) {
+                            $monthlyYieldTotal[$month.$year] += $monthlyYield;
+                        } else {
+                            $monthlyYieldTotal[$month.$year] = $monthlyYield;
+                        }
                         $price = $metrics->getPrice()->getBuyInPrice();
+                        $priceMonth[$month.$year] = $price;                  
                     }
                 }
-                //get yield
-                //get surplus
-                //get price
+                
+                foreach($monthlyKwHUseds as $monthlyUsed) {
+                    $month = $monthlyUsed->getDate()->format('m');
+                    $year = $monthlyUsed->getDate()->format('Y');
+                    $monthlyKwHUsed = $monthlyUsed->getMonthlyKwHUsed();
+                    if (!empty($monthlyYieldTotal[$month.$year])) {
+                        $monthlySurplus = $monthlyYieldTotal[$month.$year] - $monthlyKwHUsed;
+                        $surplusses["surplus ".$month." - ".$year] = $monthlySurplus;
+                        $monthlyOverturn = $monthlySurplus * $priceMonth[$month.$year];
+                        $totalOverturn += $monthlyOverturn;
+                    }
+                }
 
                 $spreadsheet1Info["client".$client->getId()] = [
                     "firstName" => $client->getFirstName(),
                     "lastName" => $client->getLastName(),
                     "age" => $client->getAge(),
                     "gender" => $client->getGender(),
-                    //"totalTurnover" => null, //Price*total_surplus(yield - usage)
-                    //"surplusPerMonth" => null //yield - usage
+                    "totalTurnover" => $totalOverturn,
+                    "surplusPerMonth" => $surplusses
                 ];
             }            
         }
-        //$spreadsheet1Info = null;
         return($spreadsheet1Info);
     }
+
+    /*private function getMonthlyYieldAndPrice($devices) {
+        foreach($devices as $device) {
+            $deviceMetrics = $device->getDeviceMetrics();
+            foreach($deviceMetrics as $metrics) {
+                $monthlyYield = $metrics->getMonthlyYield();                      
+                $month = $metrics->getPrice()->getStartDate()->format('m');
+                $year = $metrics->getPrice()->getStartDate()->format('Y');
+                if(!empty($monthlyYieldTotal[$month.$year])) {
+                    $monthlyYieldTotal[$month.$year] += $monthlyYield;
+                } else {
+                    $monthlyYieldTotal[$month.$year] = $monthlyYield;
+                }
+                $price = $metrics->getPrice()->getBuyInPrice();
+                $priceMonth[$month.$year] = $price;                  
+            }
+        }
+        return($monthlyYieldTotal, $priceMonth);
+    }*/
+
+    /*private function calcSurplusAndOverturn($monthlyKwHUseds) {
+        foreach($monthlyKwHUseds as $monthlyUsed) {
+            $month = $monthlyUsed->getDate()->format('m');
+            $year = $monthlyUsed->getDate()->format('Y');
+            $monthlyKwHUsed = $monthlyUsed->getMonthlyKwHUsed();
+            if (!empty($monthlyYieldTotal[$month.$year])) {
+                $monthlySurplus = $monthlyYieldTotal[$month.$year] - $monthlyKwHUsed;
+                $surplusses["surplus ".$month." - ".$year] = $monthlySurplus;
+                $monthlyOverturn = $monthlySurplus * $priceMonth[$month.$year];
+                $totalOverturn += $monthlyOverturn;
+            }
+        }
+        return($totalOverturn, $surplusses);
+    }*/
 }
