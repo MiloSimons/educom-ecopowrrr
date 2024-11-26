@@ -12,6 +12,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+
 use App\Service\ClientService;
 
 #[AsCommand(
@@ -32,15 +35,23 @@ class GetRapportCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         $year = $io->ask('Please enter from which year you want a report:');
-        $test= json_encode($this->generateSpreadsheet1($year));
-        //dd("test");
-        $io->success($test);
+        $spreadsheet1Data = json_encode($this->generateSpreadsheet1($year));
+        $io->success($spreadsheet1Data);
         return Command::SUCCESS;
     }
 
     // An overview of all clients with their total yearly turnover per client and total bought KwH during that period
     private function generateSpreadsheet1($year) {
-        return($this->cs->getSpreadsheet1Info($year));
+        $data = $this->cs->getSpreadsheet1Info($year);
+        $headers = ["firstName", "lastName", "age", "gender", "totalTurnover", "totalSurplus"];
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->fromArray($headers, null, 'A1');
+        $sheet->fromArray($data, null, 'A2');
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->setPreCalculateFormulas(false);
+        $writer->save("test.xlsx");
+        return($data);
     }
 
     // An overview of the total turnover of the current year with a prognosis based on results from the pas (trendline)
