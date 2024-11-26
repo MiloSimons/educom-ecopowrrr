@@ -170,42 +170,16 @@ class ClientService {
         $allClients = $this->fetchAllClients();
         $spreadsheet1Info = [];
         foreach($allClients as $client) {
+
             if($client->getType() == "C") {
                 $overallDevice =  $this->ods->fetchOverallDeviceByClient($client);
                 $devices = $overallDevice->getDevices();
+                $monthlyYieldTotal = $this->getMonthlyYieldAndPrice($devices)["totalYield"];
+                $priceMonth = $this->getMonthlyYieldAndPrice($devices)["prices"];
                 $monthlyKwHUseds = $overallDevice->getMonthlyUseds();
-                $totalOverturn = 0;
-                $surplusses = [];
-                $monthlyYieldTotal = [];
-                $priceMonth = [];
 
-                foreach($devices as $device) {
-                    $deviceMetrics = $device->getDeviceMetrics();
-                    foreach($deviceMetrics as $metrics) {
-                        $monthlyYield = $metrics->getMonthlyYield();                      
-                        $month = $metrics->getPrice()->getStartDate()->format('m');
-                        $year = $metrics->getPrice()->getStartDate()->format('Y');
-                        if(!empty($monthlyYieldTotal[$month.$year])) {
-                            $monthlyYieldTotal[$month.$year] += $monthlyYield;
-                        } else {
-                            $monthlyYieldTotal[$month.$year] = $monthlyYield;
-                        }
-                        $price = $metrics->getPrice()->getBuyInPrice();
-                        $priceMonth[$month.$year] = $price;                  
-                    }
-                }
-                
-                foreach($monthlyKwHUseds as $monthlyUsed) {
-                    $month = $monthlyUsed->getDate()->format('m');
-                    $year = $monthlyUsed->getDate()->format('Y');
-                    $monthlyKwHUsed = $monthlyUsed->getMonthlyKwHUsed();
-                    if (!empty($monthlyYieldTotal[$month.$year])) {
-                        $monthlySurplus = $monthlyYieldTotal[$month.$year] - $monthlyKwHUsed;
-                        $surplusses["surplus ".$month." - ".$year] = $monthlySurplus;
-                        $monthlyOverturn = $monthlySurplus * $priceMonth[$month.$year];
-                        $totalOverturn += $monthlyOverturn;
-                    }
-                }
+                $totalOverturn = $this->calcSurplusAndOverturn($monthlyKwHUseds, $monthlyYieldTotal, $priceMonth)["totalOverturn"];
+                $surplusses = $this->calcSurplusAndOverturn($monthlyKwHUseds, $monthlyYieldTotal, $priceMonth)["surplusses"];              
 
                 $spreadsheet1Info["client".$client->getId()] = [
                     "firstName" => $client->getFirstName(),
@@ -220,37 +194,47 @@ class ClientService {
         return($spreadsheet1Info);
     }
 
-    /*private function getMonthlyYieldAndPrice($devices) {
+    private function getMonthlyYieldAndPrice($devices) {
+        $monthlyYieldTotal = [];
+        $priceMonth = [];
+
         foreach($devices as $device) {
             $deviceMetrics = $device->getDeviceMetrics();
+
             foreach($deviceMetrics as $metrics) {
                 $monthlyYield = $metrics->getMonthlyYield();                      
                 $month = $metrics->getPrice()->getStartDate()->format('m');
                 $year = $metrics->getPrice()->getStartDate()->format('Y');
+
                 if(!empty($monthlyYieldTotal[$month.$year])) {
                     $monthlyYieldTotal[$month.$year] += $monthlyYield;
                 } else {
                     $monthlyYieldTotal[$month.$year] = $monthlyYield;
                 }
+
                 $price = $metrics->getPrice()->getBuyInPrice();
                 $priceMonth[$month.$year] = $price;                  
             }
         }
-        return($monthlyYieldTotal, $priceMonth);
-    }*/
+        return(["totalYield"=>$monthlyYieldTotal, "prices"=>$priceMonth]);
+    }
 
-    /*private function calcSurplusAndOverturn($monthlyKwHUseds) {
+    private function calcSurplusAndOverturn($monthlyKwHUseds, $monthlyYieldTotal, $priceMonth) {
+        $totalOverturn = 0;
+        $surplusses = [];
+
         foreach($monthlyKwHUseds as $monthlyUsed) {
             $month = $monthlyUsed->getDate()->format('m');
             $year = $monthlyUsed->getDate()->format('Y');
             $monthlyKwHUsed = $monthlyUsed->getMonthlyKwHUsed();
-            if (!empty($monthlyYieldTotal[$month.$year])) {
+
+            if(!empty($monthlyYieldTotal[$month.$year])) {
                 $monthlySurplus = $monthlyYieldTotal[$month.$year] - $monthlyKwHUsed;
                 $surplusses["surplus ".$month." - ".$year] = $monthlySurplus;
                 $monthlyOverturn = $monthlySurplus * $priceMonth[$month.$year];
                 $totalOverturn += $monthlyOverturn;
             }
         }
-        return($totalOverturn, $surplusses);
-    }*/
+        return(["totalOverturn"=>$totalOverturn, "surplusses"=>$surplusses]);
+    }
 }
