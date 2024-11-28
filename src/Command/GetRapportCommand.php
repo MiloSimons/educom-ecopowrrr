@@ -44,13 +44,15 @@ class GetRapportCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        //$year = $io->ask('Please enter from which year you want a report:');
-        //$spreadsheet1Data = json_encode($this->generateSpreadsheet1($year));
+        $year = $io->ask('Please enter from which year you want a report:');
+        $spreadsheet1Data = json_encode($this->generateSpreadsheet1($year));
+        $io->success($spreadsheet1Data);
 
         $currentYear = date("Y");
-        $spreadsheet2Data = json_encode($this->generateSpreadsheet2($currentYear));
-        //$io->success($spreadsheet1Data);
+        $spreadsheet2Data = json_encode($this->generateSpreadsheet2($currentYear));        
         $io->success($spreadsheet2Data);
+
+        
         return Command::SUCCESS;
     }
 
@@ -64,94 +66,72 @@ class GetRapportCommand extends Command
         $sheet->fromArray($data, null, 'A2');
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $writer->setPreCalculateFormulas(false);
-        $writer->save("test.xlsx"); //rename!
+        $writer->save("spreadsheet1.xlsx");
         return($data);
     }
 
-    // An overview of the total turnover of the current year with a prognosis based on results from the pas (trendline)
+    // An overview of the total turnover of the current year with a prognosis based on results from the past (trendline)
     private function generateSpreadsheet2($currentYear) {
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-        
-        $data = $this->cs->getSpreadsheet2Info($currentYear);
-        //dd($data);
-        //$trendlineFormula = $this->cs->calculateTrendline($data);
-        //dd($trendlineFormula);
-
-        $headers = [array_keys($data)];    
-        
+        $data = $this->cs->getSpreadsheet2Info($currentYear); 
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle("Sheet1");
-        //$sheet->fromArray($headers, null, 'A1');
-        //$sheet->fromArray($data, null, 'A2');
-        $sheet->setCellValue('A1', 'Date');
+        $trendlineFormula = $this->cs->calculateTrendline($data);
+        $sheet->setCellValue('D17', 'Trend line formula:');
+        $sheet->setCellValue('D18', $trendlineFormula["equation"]);
+        $sheet->setCellValue('A1', 'Month');
         $sheet->setCellValue('B1', 'Overturn');
 
-        $row = 2;
-        
-        foreach ($data as $date => $overturn) {
-
-            $sheet->setCellValue("A$row", $date);
-            $sheet->getStyle("A$row")->getNumberFormat()->setFormatCode("MM-YYYY");
-            $sheet->setCellValue("B$row", $overturn);
-            $row++;
-        }
-        //dump($row);
-        $value = $row-2;
-        //dump($value);
-        // Set chart data ranges (use the data for the x and y values)
-        $labels = new DataSeriesValues('String', 'Sheet1!$A$2:$A$13', null, $value);
-        $values = new DataSeriesValues('Number', 'Sheet1!$B$2:$B$13', null, $value);
-        $dsl = [
-                new DataSeriesValues('String', 'Sheet1!$A$1', null, 1),
-                new DataSeriesValues('String', 'Sheet1!$B$1', null, 1)
-            ];
-        //dd($dsl);
-        //dd($labels, $values);
-        // Create a DataSeries object for the scatter plot
-        $series = new DataSeries(
-            DataSeries::TYPE_SCATTERCHART,
-            null,//DataSeries::GROUPING_CLUSTERED, 
-            range(0, count([$values])-1), 
-            $dsl, 
-            [$labels], 
-            [$values]
-        );
-
-        // Create a plot area and a chart
+        $series = $this->createScatterPlot($data, $sheet);             
         $plotArea = new PlotArea(null, [$series]);
         $chart = new Chart(
-            'trendlineChart', // chart name
+            'trendlineChart',
             new Title('Total overturn per month'),
             new Legend(), 
-            $plotArea, 
-            //new Axis('Date Axis', Axis::POSITION_BOTTOM), 
-            //new Axis('Value Axis', Axis::POSITION_LEFT)
+            $plotArea,
         );
-
-        // Position the chart on the spreadsheet
         $chart->setTopLeftPosition('D2');
-        $chart->setBottomRightPosition('L15');
-
-        // Add the trendline (linear) with forecast
-        
-        //$trendline = new Trendline();
-        //$trendline->setType(TrendLine::TYPE_LINEAR);  // Linear trendline
-        //$trendline->setForecast(5);                   // Prognosis (forecast 5 periods ahead)
-        //$series->addTrendLine($trendline);
-        
-        // Add the chart to the worksheet
-        $sheet->addChart($chart);
-
+        $chart->setBottomRightPosition('L15');        
+        $sheet->addChart($chart);        
 
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        //$writer->setPreCalculateFormulas(false);
+        $writer->setPreCalculateFormulas(false);
         $writer->setIncludeCharts(true);
-        $writer->save("test2.xlsx");
+        $writer->save("spreadsheet2.xlsx");
+        $data["trendline equation:"] = $trendlineFormula["equation"]; 
         return($data);
     }
 
     // An overview of the total turnover, total yield and total surplus per municipality
     private function generateSpreadsheet3() {
         
+    }
+
+    private function createScatterPlot($data, $sheet) {
+        $row = 2;
+        foreach ($data as $date => $overturn) {
+            $sheet->setCellValue("A$row", $date);
+            $sheet->getStyle("A$row")->getNumberFormat()->setFormatCode("MM-YYYY");
+            $sheet->setCellValue("B$row", $overturn);
+            $row++;
+        }
+
+        $value = $row-2;        
+        $labels = new DataSeriesValues('String', 'Sheet1!$A$2:$A$13', null, $value);
+        $values = new DataSeriesValues('Number', 'Sheet1!$B$2:$B$13', null, $value);
+        $dsl = [
+                new DataSeriesValues('String', 'Sheet1!$A$1', null, 1),
+                new DataSeriesValues('String', 'Sheet1!$B$1', null, 1)
+            ];        
+        
+        $series = new DataSeries(
+            DataSeries::TYPE_SCATTERCHART,
+            null, 
+            range(0, count([$values])-1), 
+            $dsl, 
+            [$labels], 
+            [$values]
+        );
+        return($series);
     }
 }

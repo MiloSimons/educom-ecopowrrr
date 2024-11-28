@@ -304,27 +304,22 @@ class ClientService {
     }
 
     public function calculateTrendline($dataPoints) {
-        $n = count($dataPoints);
-        
-        //$keys = array_keys($dataPoints);
-        //if count(dataPoints)>0 gebruiken bij aanroepen functie
+        $n = count($dataPoints);        
         $sumX = 0;
         $sumY = 0;
         $sumXY = 0;
         $sumX2 = 0;
         $x = 0;
+
         foreach ($dataPoints as $date => $point) {
-              // date: first point should be 0, next 1, next 2, etc...
-            $y = $point;//$point[$keys[$x]];  // value
-            
+            $y = $point;            
             $sumX += $x;
             $sumY += $y;
             $sumXY += $x * $y;
             $sumX2 += $x * $x;
-
             $x++;
         }
-        //dd($sumX, $sumY, $sumXY, $sumX2);
+        
         $slope = ($n * $sumXY - $sumX * $sumY) / ($n * $sumX2 - $sumX * $sumX);
         $intercept = ($sumY - $slope * $sumX) / $n;
 
