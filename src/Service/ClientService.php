@@ -233,11 +233,30 @@ class ClientService {
             if(!empty($monthlyYieldTotal[$month.$year])) {
                 $monthlySurplus = $monthlyYieldTotal[$month.$year] - $monthlyKwHUsed;
                 $surplusses += $monthlySurplus;
-                $monthlyOverturn = $monthlySurplus * $priceMonth[$month.$year];
+                $monthlyOverturn = $monthlySurplus * $priceMonth[$month.$year]; //
                 $totalOverturn += $monthlyOverturn;
             }
         }
         return(["totalOverturn"=>$totalOverturn, "surplusses"=>$surplusses]);
+    }
+
+    private function calcOverturnMonthly($monthlyKwHUseds, $monthlyYieldTotal, $priceMonth, $currentYear) {
+        $totalOverturn = 0;
+        $surplusses = 0;
+        $monthlyOverturns = [];
+        foreach($monthlyKwHUseds as $monthlyUsed) {
+            $month = $monthlyUsed->getDate()->format('m');
+            $year = $monthlyUsed->getDate()->format('Y');
+            $monthlyKwHUsed = $monthlyUsed->getMonthlyKwHUsed();
+
+            if(!empty($monthlyYieldTotal[$month.$year])) {
+                $monthlySurplus = $monthlyYieldTotal[$month.$year] - $monthlyKwHUsed;
+                $surplusses += $monthlySurplus;
+                $monthlyOverturn = $monthlySurplus * $priceMonth[$month.$year]; //
+                $monthlyOverturns[$month.'-'.$currentYear] = $monthlyOverturn;
+            }
+        }
+        return($monthlyOverturns);
     }
 
     private function filterOnYear($monthlyKwHUseds, $year) {
@@ -250,4 +269,70 @@ class ClientService {
         }
         return($monthlyKwHUsedsYear);
     }
+
+    public function getSpreadsheet2Info($currentYear) {
+        $allClients = $this->fetchAllClients();
+        $spreadsheet2Info = [];
+        $clientOverturns = [];
+        foreach($allClients as $client) {
+
+            if($client->getType() == "C") {
+                $overallDevice =  $this->ods->fetchOverallDeviceByClient($client);
+                $devices = $overallDevice->getDevices();
+                $monthlyYieldTotal = $this->getMonthlyYieldAndPrice($devices)["totalYield"];
+                $priceMonth = $this->getMonthlyYieldAndPrice($devices)["prices"];
+                
+                $monthlyKwHUseds = $overallDevice->getMonthlyUseds();
+                $monthlyKwHUsedsYear = $this->filterOnYear($monthlyKwHUseds, $currentYear);
+
+                $clientOverturnMonthly = $this->calcOverturnMonthly($monthlyKwHUsedsYear, $monthlyYieldTotal, $priceMonth, $currentYear);           
+                $clientOverturns += ["client".$client->getId() => $clientOverturnMonthly];
+            }            
+        }
+
+        foreach($clientOverturns as $clientOverturn) {
+            $arrayKeys = array_keys($clientOverturn);
+            foreach($arrayKeys as $arrayKey){
+                if(!empty($spreadsheet2Info[$arrayKey])) {
+                    $spreadsheet2Info[$arrayKey] += $clientOverturn[$arrayKey];
+                } else {
+                    $spreadsheet2Info[$arrayKey] = $clientOverturn[$arrayKey];
+                }
+            }  
+        }
+        return($spreadsheet2Info);
+    }
+
+    public function calculateTrendline($dataPoints) {
+        $n = count($dataPoints);
+        
+        //$keys = array_keys($dataPoints);
+        //if count(dataPoints)>0 gebruiken bij aanroepen functie
+        $sumX = 0;
+        $sumY = 0;
+        $sumXY = 0;
+        $sumX2 = 0;
+        $x = 0;
+        foreach ($dataPoints as $date => $point) {
+              // date: first point should be 0, next 1, next 2, etc...
+            $y = $point;//$point[$keys[$x]];  // value
+            
+            $sumX += $x;
+            $sumY += $y;
+            $sumXY += $x * $y;
+            $sumX2 += $x * $x;
+
+            $x++;
+        }
+        //dd($sumX, $sumY, $sumXY, $sumX2);
+        $slope = ($n * $sumXY - $sumX * $sumY) / ($n * $sumX2 - $sumX * $sumX);
+        $intercept = ($sumY - $slope * $sumX) / $n;
+
+        return [
+            "slope" => $slope,
+            "intercept" => $intercept,
+            "equation" => "y = " . round($slope, 2) . "x + " . round($intercept, 2)
+        ];
+    }
+
 }
