@@ -17,7 +17,7 @@ class OverallDeviceController extends AbstractController
         $this->cs = $cs;      
     }
 
-    #[Route('/getMessage/zipCode={zipCode}&houseNumber={houseNumber}&month={month}&year={year}', name: 'getMessage')] //add date? or date always being today's date?
+    #[Route('/getMessage/zipCode={zipCode}&houseNumber={houseNumber}&month={month}&year={year}', name: 'getMessage')]
     public function getMessage($zipCode, $houseNumber, $month, $year) {
         $overallDevice = $this->cs->getMessage($zipCode, $houseNumber, $month, $year);
         $response = new Response(json_encode($overallDevice));        
