@@ -52,7 +52,9 @@ class GetRapportCommand extends Command
         $spreadsheet2Data = json_encode($this->generateSpreadsheet2($currentYear));        
         $io->success($spreadsheet2Data);
 
-        
+        $spreadsheet3Data = json_encode($this->generateSpreadsheet3());
+        $io->success($spreadsheet3Data);
+
         return Command::SUCCESS;
     }
 
@@ -60,8 +62,9 @@ class GetRapportCommand extends Command
     private function generateSpreadsheet1($year) {
         $data = $this->cs->getSpreadsheet1Info($year);
         $headers = ["firstName", "lastName", "age", "gender", "totalTurnover", "totalSurplus"];
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();        
         $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle("Client overview of ".$year);
         $sheet->fromArray($headers, null, 'A1');
         $sheet->fromArray($data, null, 'A2');
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
@@ -104,7 +107,18 @@ class GetRapportCommand extends Command
 
     // An overview of the total turnover, total yield and total surplus per municipality
     private function generateSpreadsheet3() {
-        
+        $data = $this->cs->getSpreadsheet3Info();
+        $headers = ["municipality", "totalTurnover", "totalYield", "totalSurplus"];
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $sheet->fromArray($headers, null, 'A1');
+        $sheet->fromArray($data, null, 'A2');
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->setPreCalculateFormulas(false);
+        $writer->save("spreadsheet3.xlsx");
+        return($data);
     }
 
     private function createScatterPlot($data, $sheet) {

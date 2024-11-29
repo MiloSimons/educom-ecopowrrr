@@ -233,7 +233,7 @@ class ClientService {
             if(!empty($monthlyYieldTotal[$month.$year])) {
                 $monthlySurplus = $monthlyYieldTotal[$month.$year] - $monthlyKwHUsed;
                 $surplusses += $monthlySurplus;
-                $monthlyOverturn = $monthlySurplus * $priceMonth[$month.$year]; //
+                $monthlyOverturn = $monthlySurplus * $priceMonth[$month.$year];
                 $totalOverturn += $monthlyOverturn;
             }
         }
@@ -252,7 +252,7 @@ class ClientService {
             if(!empty($monthlyYieldTotal[$month.$year])) {
                 $monthlySurplus = $monthlyYieldTotal[$month.$year] - $monthlyKwHUsed;
                 $surplusses += $monthlySurplus;
-                $monthlyOverturn = $monthlySurplus * $priceMonth[$month.$year]; //
+                $monthlyOverturn = $monthlySurplus * $priceMonth[$month.$year];
                 $monthlyOverturns[$month.'-'.$currentYear] = $monthlyOverturn;
             }
         }
@@ -328,6 +328,49 @@ class ClientService {
             "intercept" => $intercept,
             "equation" => "y = " . round($slope, 2) . "x + " . round($intercept, 2)
         ];
+    }
+
+    public function getSpreadsheet3Info() {
+        $allClients = $this->fetchAllClients();
+        $spreadsheet3Info = [];
+        
+        foreach($allClients as $client) {
+
+            if($client->getType() == "C") {
+                $municipality = $client->getMunicipality();
+                $overallDevice =  $this->ods->fetchOverallDeviceByClient($client);
+                $devices = $overallDevice->getDevices();
+                $monthlyYieldTotal = $this->getMonthlyYieldAndPrice($devices)["totalYield"];
+                $priceMonth = $this->getMonthlyYieldAndPrice($devices)["prices"];
+                $monthlyKwHUseds = $overallDevice->getMonthlyUseds();
+
+                $totalYield = $this->calcTotalYield($monthlyYieldTotal);
+                $totalOverturn = $this->calcSurplusAndOverturn($monthlyKwHUseds, $monthlyYieldTotal, $priceMonth)["totalOverturn"];
+                $totalSurplus = $this->calcSurplusAndOverturn($monthlyKwHUseds, $monthlyYieldTotal, $priceMonth)["surplusses"];              
+                
+                if(!empty($spreadsheet3Info[$municipality])) {
+                    $spreadsheet3Info[$municipality]["totalTurnover"] +=  $totalOverturn;
+                    $spreadsheet3Info[$municipality]["totalYield"] +=  $totalYield;
+                    $spreadsheet3Info[$municipality]["totalSurplus"] +=  $totalSurplus;
+                } else {
+                    $spreadsheet3Info[$municipality] = [
+                        "municipality" => $municipality,
+                        "totalTurnover" => $totalOverturn,
+                        "totalYield" => $totalYield,
+                        "totalSurplus" => $totalSurplus
+                    ];
+                }
+            }            
+        }
+        return($spreadsheet3Info);
+    }
+
+    private function calcTotalYield($monthlyYieldTotal) {
+        $totalYield = 0;
+        foreach($monthlyYieldTotal as $monthlyYield) {
+            $totalYield += $monthlyYield;
+        }
+        return($totalYield);
     }
 
 }
